@@ -9,7 +9,8 @@ class GenreController extends Controller
 {
     public function index()
     {
-        $genres = Genre::all();
+        $genres = Genre::with('books')->get();
+
         return response()->json($genres);
     }
 
@@ -17,6 +18,7 @@ class GenreController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|unique:genres|max:255',
+            'description' => 'required|string',
         ]);
 
         $genre = Genre::create($validatedData);
