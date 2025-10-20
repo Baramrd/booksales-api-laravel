@@ -1,16 +1,27 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\GenreController;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Rute Publik untuk Autentikasi (Register & Login)
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
 
-Route::apiResource('authors', AuthorController::class);
-Route::apiResource('genres', GenreController::class);
+// Rute Publik untuk Author dan Genre (Read All & Show)
+Route::apiResource('authors', AuthorController::class)->only(['index', 'show']);
+Route::apiResource('genres', GenreController::class)->only(['index', 'show']);
 
-Route::apiResource('books', BookController::class)->only(['index', 'store']);
+// Rute Buku
+Route::get('/books', [BookController::class, 'index']);
+
+// Rute Admin yang Dilindungi
+Route::middleware(['auth:api', 'admin'])->group(function () {
+    // Menggunakan except() untuk melindungi rute Create, Update, Destroy
+    Route::apiResource('authors', AuthorController::class)->except(['index', 'show']);
+    Route::apiResource('genres', GenreController::class)->except(['index', 'show']);
+    
+    // Route::apiResource('books', BookController::class); 
+});
