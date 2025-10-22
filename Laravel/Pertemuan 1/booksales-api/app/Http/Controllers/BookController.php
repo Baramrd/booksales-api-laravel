@@ -21,7 +21,7 @@ class BookController extends Controller
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'cover_photo' => 'required|string|max:255',
+            'cover_photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'author_id' => 'required|integer|exists:authors,id',
             'genre_id' => 'required|integer|exists:genres,id',
         ]);

@@ -18,7 +18,7 @@ class AuthorController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'photo' => 'required|string|max:255',
+            'photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'bio' => 'required|string',
         ]);
 
@@ -37,7 +37,7 @@ class AuthorController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'photo' => 'required|string|max:255',
+            'photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'bio' => 'required|string',
         ]);
 
