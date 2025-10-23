@@ -5,9 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class BookController extends Controller
 {
+    private const BOOK_STORAGE_DIR = 'books/';
+
+    private function getStoragePath(string $coverPhoto): string
+    {
+        if (Str::startsWith($coverPhoto, self::BOOK_STORAGE_DIR)) {
+            return $coverPhoto;
+        }
+        return self::BOOK_STORAGE_DIR . $coverPhoto;
+    }
+
     public function index()
     {
         $books = Book::with(['author', 'genre'])->get();
@@ -28,7 +39,7 @@ class BookController extends Controller
         ]);
 
         if ($request->hasFile('cover_photo')) {
-            $path = $request->file('cover_photo')->store('books', 'public');
+            $path = $request->file('cover_photo')->store(self::BOOK_STORAGE_DIR, 'public'); 
             $validatedData['cover_photo'] = $path;
         }
 
@@ -58,9 +69,9 @@ class BookController extends Controller
 
         if ($request->hasFile('cover_photo')) {
             if ($book->cover_photo) {
-                Storage::disk('public')->delete($book->cover_photo);
+                Storage::disk('public')->delete($this->getStoragePath($book->cover_photo));
             }
-            $path = $request->file('cover_photo')->store('books', 'public');
+            $path = $request->file('cover_photo')->store(self::BOOK_STORAGE_DIR, 'public');
             $validatedData['cover_photo'] = $path;
         }
 
@@ -73,7 +84,7 @@ class BookController extends Controller
     public function destroy(Book $book)
     {
         if ($book->cover_photo) {
-            Storage::disk('public')->delete($book->cover_photo);
+            Storage::disk('public')->delete($this->getStoragePath($book->cover_photo));
         }
         $book->delete();
         
