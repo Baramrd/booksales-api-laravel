@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class AuthorController extends Controller
 {
-    private const AUTHOR_STORAGE_DIR = 'authors/';
+    private const AUTHOR_STORAGE_DIR = 'authors';
 
     private function getStoragePath(string $photoPath): string
     {
