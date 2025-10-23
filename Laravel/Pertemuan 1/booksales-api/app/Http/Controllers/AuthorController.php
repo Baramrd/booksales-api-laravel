@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Author;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AuthorController extends Controller
 {
@@ -22,6 +23,11 @@ class AuthorController extends Controller
             'bio' => 'required|string',
         ]);
 
+        if ($request->hasFile('photo')) {
+            $path = $request->file('photo')->store('authors', 'public');
+            $validatedData['photo'] = $path;
+        }
+
         $author = Author::create($validatedData);
 
         return response()->json($author, 201);
@@ -37,9 +43,18 @@ class AuthorController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'photo' => 'sometimes|image|mimes:jpeg,png,jpg|max:2048',
             'bio' => 'required|string',
         ]);
+
+        if ($request->hasFile('photo')) {
+            if ($author->photo) {
+                Storage::disk('public')->delete($author->photo);
+            }
+
+            $path = $request->file('photo')->store('authors', 'public');
+            $validatedData['photo'] = $path;
+        }
 
         $author->update($validatedData);
 
@@ -49,6 +64,10 @@ class AuthorController extends Controller
 
     public function destroy(Author $author)
     {
+        if ($author->photo) {
+            Storage::disk('public')->delete($author->photo);
+        }
+
         $author->delete();
 
         return response()->json(['message' => 'Author berhasil dihapus']);

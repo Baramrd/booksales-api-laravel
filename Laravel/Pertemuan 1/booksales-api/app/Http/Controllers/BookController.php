@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BookController extends Controller
 {
@@ -26,10 +27,56 @@ class BookController extends Controller
             'genre_id' => 'required|integer|exists:genres,id',
         ]);
 
-        $book = Book::create($validatedData);
+        if ($request->hasFile('cover_photo')) {
+            $path = $request->file('cover_photo')->store('books', 'public');
+            $validatedData['cover_photo'] = $path;
+        }
 
+        $book = Book::create($validatedData);
         $book->load(['author', 'genre']);
 
         return response()->json($book, 201);
+    }
+
+    public function show(Book $book)
+    {
+        $book->load(['author', 'genre']);
+        return response()->json($book);
+    }
+
+    public function update(Request $request, Book $book)
+    {
+        $validatedData = $request->validate([
+            'title' => 'sometimes|string|max:255',
+            'description' => 'sometimes|string',
+            'price' => 'sometimes|numeric|min:0',
+            'stock' => 'sometimes|integer|min:0',
+            'cover_photo' => 'sometimes|image|mimes:jpeg,png,jpg|max:2048',
+            'author_id' => 'sometimes|integer|exists:authors,id',
+            'genre_id' => 'sometimes|integer|exists:genres,id',
+        ]);
+
+        if ($request->hasFile('cover_photo')) {
+            if ($book->cover_photo) {
+                Storage::disk('public')->delete($book->cover_photo);
+            }
+            $path = $request->file('cover_photo')->store('books', 'public');
+            $validatedData['cover_photo'] = $path;
+        }
+
+        $book->update($validatedData);
+        $book->load(['author', 'genre']);
+
+        return response()->json($book);
+    }
+
+    public function destroy(Book $book)
+    {
+        if ($book->cover_photo) {
+            Storage::disk('public')->delete($book->cover_photo);
+        }
+        $book->delete();
+        
+        return response()->json(['message' => 'Buku berhasil dihapus']);
     }
 }
